@@ -80,9 +80,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
  * |      |      |      |      |      |      |                    |      |      |      |      |      |      |
  * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------.    ,-------|      |      |RGB ON| HUE+ | SAT+ | VAL+ |
+ * |      |      |      |      |      |      |-------.    ,-------|      |      |      |      |      | VOL+ |
  * |------+------+------+------+------+------|       |    |       |------+------+------+------+------+------|
- * |      |      |      |      |      |      |-------|    |-------|      |      | MODE | HUE- | SAT- | VAL- |
+ * |      |      |      |      |      |      |-------|    |-------|      |      |      |      |      | VOL- |
  * `-----------------------------------------/       /     \      \-----------------------------------------'
  *                   | LAlt | LGUI |LOWER | /Space  /       \Enter \  |RAISE |BackSP| RGUI |
  *                   |      |      |      |/       /         \      \ |      |      |      |
@@ -91,8 +91,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_ADJUST] = LAYOUT( \
   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, \
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,\
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_VOLU, \
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_VOLD,\
                              _______, _______, _______, _______, _______,  _______, _______, _______ \
   )
 };
@@ -105,14 +105,14 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 #ifdef OLED_ENABLE
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (!is_keyboard_master())
-    return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
-  return rotation;
+  if (is_keyboard_left()) return OLED_ROTATION_270;
+  return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
 }
 
 // When you add source files to SRC in rules.mk, you can use functions.
 const char *read_layer_state(void);
 const char *read_logo(void);
+char wpm_str[10];
 // void set_keylog(uint16_t keycode, keyrecord_t *record);
 // const char *read_keylog(void);
 // const char *read_keylogs(void);
@@ -123,18 +123,35 @@ const char *read_logo(void);
 // const char *read_timelog(void);
 
 bool oled_task_user(void) {
-  if (is_keyboard_master()) {
+  if (is_keyboard_left()) {
     // If you want to change the display of OLED, you need to change here
-    oled_write_ln(read_layer_state(), false);
-    //oled_write_ln(read_keylog(), false);
-    //oled_write_ln(read_keylogs(), false);
-    //oled_write_ln(read_mode_icon(keymap_config.swap_lalt_lgui), false);
-    //oled_write_ln(read_host_led_state(), false);
-    //oled_write_ln(read_timelog(), false);
-  } else {
-    oled_write(read_logo(), false);
+    oled_write_ln_P(PSTR(" wpm"), false);
+    sprintf(wpm_str, " %03d", get_current_wpm());
+    oled_write_ln(wpm_str, false);
+
+    oled_write_ln_P(PSTR(""), false);
+
+    // Layer display
+    switch (get_highest_layer(layer_state)) {
+      case _QWERTY:
+        oled_write_ln_P(PSTR("deflt"), false);
+        break;
+      case _RAISE:
+        oled_write_ln_P(PSTR("raise"), false);
+        break;
+      case _LOWER:
+        oled_write_ln_P(PSTR("lower"), false);
+        break;
+      case _ADJUST:
+        oled_write_ln_P(PSTR("adjst"), false);
+        break;
+      default:
+        oled_write_ln_P(PSTR("error"), false);
+    }
+ } else {
+    // oled_write(read_logo(), false);
   }
-    return false;
+  return false;
 }
 #endif // OLED_ENABLE
 
