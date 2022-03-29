@@ -102,7 +102,7 @@ bool oled_task_user(void) {
     oled_write_ln("", false);
 
     // Layer display
-    oled_write_ln("-KEY-", false);
+    oled_write_ln("-MAP-", false);
     switch (get_highest_layer(layer_state)) {
       case _RAISE:
         oled_write_ln_P(PSTR("RAISE"), false);
@@ -113,14 +113,8 @@ bool oled_task_user(void) {
       case _ADJUST:
         oled_write_ln_P(PSTR("ADJUS"), false);
         break;
-      case _COLEMAK:
-        oled_write_ln_P(PSTR("COLEM"), false);
-        break;
-      case _QWERTY:
-        oled_write_ln_P(PSTR("QWERT"), false);
-        break;
       default:
-        oled_write_ln_P(PSTR("error"), false);
+        oled_write_ln_P(PSTR("DEFLT"), false);
     }
  } else {
   }
