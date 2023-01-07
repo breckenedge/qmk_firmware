@@ -5,6 +5,8 @@
 
 #pragma once
 
+#define MASTER_RIGHT
+
 #define XXX KC_NO
 
 #define LAYOUT_miryoku( \
